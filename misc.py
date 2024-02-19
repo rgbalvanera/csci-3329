@@ -23,3 +23,9 @@ setattr(unit1, "attribute_name") # Set the attribute to a new value
 
 delattr(unit1, "attribute_name") # Delete the attribute
 '''
+
+''' Printing true or false statements
+print(1-1==0)
+print(1-1!=0)'''
+
+print("meow i love you")
