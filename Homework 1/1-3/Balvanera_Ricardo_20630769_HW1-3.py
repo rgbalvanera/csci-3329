@@ -3,7 +3,6 @@ def years(n, k, civs):
     civilizations = set(civs)
     connected = set()
     years = 0
-
     while civilizations:
         years += 1
         new_civs = set()
