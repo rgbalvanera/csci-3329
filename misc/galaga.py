@@ -1,117 +1,72 @@
-import os
-import time
+import pygame
 import random
-import threading
-import sys
-import keyboard
 
-# Constants
-WIDTH = 30
-HEIGHT = 20
-PLAYER_CHAR = "A"
-ENEMY_CHAR = "X"
-BULLET_CHAR = "|"
-PLAYER_START_X = WIDTH // 2
-PLAYER_START_Y = HEIGHT - 1
-ENEMY_START_Y = 1
-ENEMY_COUNT = 5
-BULLET_SPEED = 0.1
-ENEMY_SPEED = 0.2
+# Initialize Pygame
+pygame.init()
 
-# Global Variables
-player_x = PLAYER_START_X
-player_y = PLAYER_START_Y
-bullet_x = None
-bullet_y = None
-enemies = []
+# Set up the screen
+screen = pygame.display.set_mode((800, 600))
+pygame.display.set_caption("Galaga Clone")
 
+# Colors
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
 
-def clear_screen():
-    os.system('cls' if os.name == 'nt' else 'clear')
+# Player
+player_img = pygame.image.load('player.png')
+player_x = 370
+player_y = 480
+player_x_change = 0
 
+# Enemy
+enemy_img = pygame.image.load('enemy.png')
+enemy_x = random.randint(0, 736)
+enemy_y = random.randint(50, 150)
+enemy_x_change = 0.3
+enemy_y_change = 40
 
-def print_screen():
-    screen = ""
-    for y in range(HEIGHT):
-        for x in range(WIDTH):
-            if (x, y) == (player_x, player_y):
-                screen += PLAYER_CHAR
-            elif (x, y) == (bullet_x, bullet_y):
-                screen += BULLET_CHAR
-            elif (x, y) in enemies:
-                screen += ENEMY_CHAR
-            else:
-                screen += " "
-        screen += "\n"
-    print(screen)
+def player(x, y):
+    screen.blit(player_img, (x, y))
 
+def enemy(x, y):
+    screen.blit(enemy_img, (x, y))
 
-def move_bullet():
-    global bullet_y
-    if bullet_y is not None:
-        bullet_y -= 1
-        if bullet_y < 0:
-            clear_bullet()
+# Game loop
+running = True
+while running:
+    screen.fill(BLACK)
 
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
 
-def move_enemies():
-    global enemies
-    new_enemies = []
-    for enemy in enemies:
-        x, y = enemy
-        new_enemies.append((x, y + 1))
-    enemies = new_enemies
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_LEFT:
+                player_x_change = -0.3
+            if event.key == pygame.K_RIGHT:
+                player_x_change = 0.3
 
+        if event.type == pygame.KEYUP:
+            if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
+                player_x_change = 0
 
-def check_collisions():
-    global bullet_x, bullet_y, enemies
-    if (bullet_x, bullet_y) in enemies:
-        enemies.remove((bullet_x, bullet_y))
-        clear_bullet()
+    player_x += player_x_change
 
+    if player_x <= 0:
+        player_x = 0
+    elif player_x >= 736:
+        player_x = 736
 
-def clear_bullet():
-    global bullet_x, bullet_y
-    bullet_x = None
-    bullet_y = None
+    player(player_x, player_y)
+    enemy(enemy_x, enemy_y)
 
+    enemy_x += enemy_x_change
 
-def game_loop():
-    global bullet_x, bullet_y
-    while True:
-        clear_screen()
-        print_screen()
-        move_bullet()
-        move_enemies()
-        check_collisions()
-        time.sleep(0.1)
+    if enemy_x <= 0:
+        enemy_x_change = 0.3
+        enemy_y += enemy_y_change
+    elif enemy_x >= 736:
+        enemy_x_change = -0.3
+        enemy_y += enemy_y_change
 
-
-def main():
-    global player_x, bullet_x, bullet_y, enemies
-
-    # Initialize player and enemies
-    player_x = PLAYER_START_X
-    bullet_x = None
-    bullet_y = None
-    enemies = [(random.randint(0, WIDTH - 1), ENEMY_START_Y) for _ in range(ENEMY_COUNT)]
-
-    # Start game loop
-    game_thread = threading.Thread(target=game_loop)
-    game_thread.daemon = True
-    game_thread.start()
-
-    while True:
-        if keyboard.is_pressed('a'):
-            player_x = max(0, player_x - 1)
-        elif keyboard.is_pressed('d'):
-            player_x = min(WIDTH - 1, player_x + 1)
-        elif keyboard.is_pressed(' '):
-            if bullet_y is None:
-                bullet_x = player_x
-                bullet_y = player_y - 1
-        time.sleep(0.1)
-
-
-if __name__ == "__main__":
-    main()
+    pygame.display.update()
